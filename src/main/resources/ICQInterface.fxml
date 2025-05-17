@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1007.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.icq.client.ICQClientController">
+   <right>
+      <VBox prefHeight="700.0" prefWidth="286.0" styleClass="gray-background" stylesheets="@style/style.css" BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="CENTER" prefHeight="42.0" prefWidth="200.0" stylesheets="@style/style.css">
+               <children>
+                  <ImageView fitHeight="26.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@image/search.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </ImageView>
+                  <TextField prefHeight="25.0" prefWidth="140.0" promptText="Пошук" styleClass="transparent-background" stylesheets="@style/style.css" fx:id="searchField">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </TextField>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="20.0" left="30.0" right="30.0" top="20.0" />
+               </VBox.margin>
+               <styleClass>
+                  <String fx:value="radius" />
+                  <String fx:value="white-background" />
+               </styleClass>
+            </HBox>
+            <Pane prefHeight="3.0" prefWidth="286.0" style="-fx-background-color: white;" />
+            <ListView fx:id="userList" prefHeight="552.0" prefWidth="286.0" stylesheets="@style/style.css">
+               <styleClass>
+                  <String fx:value="list-cell" />
+                  <String fx:value="custom-list" />
+               </styleClass></ListView>
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="userName" text="Ім'я користувача">
+                     <font>
+                        <Font size="20.0" />
+                     </font>
+                  </Label>
+                  <HBox alignment="CENTER" prefHeight="52.0" prefWidth="72.0">
+                     <children>
+                        <Button fx:id="exitButton" mnemonicParsing="false" onAction="#handleClose" styleClass="transparent-background">
+                           <graphic>
+                              <ImageView fitHeight="28.0" fitWidth="28.0">
+                                 <image>
+                                    <Image url="@image/exit-icon-1821x2048-50xh00pv.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                     </children>
+                     <HBox.margin>
+                        <Insets left="50.0" />
+                     </HBox.margin>
+                  </HBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </right>
+   <center>
+      <VBox prefHeight="700.0" prefWidth="966.0" styleClass="gray-background" stylesheets="@style/style.css" BorderPane.alignment="CENTER">
+         <children>
+            <HBox prefHeight="57.0" prefWidth="721.0">
+               <children>
+                  <Label fx:id="targetName" text="Ім'я співрозмовника">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="15.0" top="5.0" />
+                     </HBox.margin>
+                  </Label>
+               </children>
+            </HBox>
+            <TextArea fx:id="chatArea" editable="false" prefHeight="650.0" prefWidth="721.0" />
+            <HBox alignment="CENTER" prefHeight="37.0" prefWidth="679.0" stylesheets="@style/style.css">
+               <children>
+                  <TextField fx:id="inputField" prefHeight="31.0" prefWidth="619.0" promptText="Повідомлення" styleClass="transparent-background">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Button fx:id="sendButton" mnemonicParsing="false" onAction="#handleSend" styleClass="transparent-background" stylesheets="@style/style.css">
+                     <graphic>
+                        <ImageView fitHeight="28.0" fitWidth="28.0">
+                           <image>
+                              <Image url="@image/send-26.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+               </VBox.margin>
+               <styleClass>
+                  <String fx:value="white-background" />
+                  <String fx:value="radius" />
+               </styleClass>
+            </HBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

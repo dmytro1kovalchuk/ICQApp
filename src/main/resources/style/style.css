@@ -1,0 +1,35 @@
+
+.gray-background{
+    -fx-background-color: #A0A0A0;
+}
+
+.transparent-background{
+    -fx-background-color: rgba(0,0,0,0);
+
+}
+
+.radius{
+
+    -fx-background-radius: 100px;
+}
+
+.white-background{
+ -fx-background-color: #FFFFFF;
+}
+
+.custom-list .list-cell{
+    -fx-background-color: 	#DCDCDC;
+    -fx-border-color: transparent transparent white transparent;
+    -fx-border-width: 0 0 5px 0; /* отступ между элементами как белая граница */
+    -fx-padding: 5;
+}
+
+.custom-list .list-cell:filled:selected {
+    -fx-background-color: #707070;
+    -fx-text-fill: white;
+}
+
+.text-area1 {
+    -fx-control-inner-background: black;
+    -fx-text-fill: white;
+}
