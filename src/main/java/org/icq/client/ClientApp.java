@@ -24,6 +24,7 @@ public class ClientApp extends Application {
     private PrintWriter out;
     private BufferedReader in;
     private boolean isUsernameValid = false;
+    private String username;
 
     public static void main(String[] args) {
         launch(args);
@@ -70,9 +71,9 @@ public class ClientApp extends Application {
         connectButton.setOnAction(e -> {
             String ip = ipField.getText().trim();
             String portText = portField.getText().trim();
-            String username = usernameField.getText().trim();
+            String usernameInput = usernameField.getText().trim();
 
-            if (ip.isEmpty() || portText.isEmpty() || username.isEmpty()) {
+            if (ip.isEmpty() || portText.isEmpty() || usernameInput.isEmpty()) {
                 errorLabel.setText("Усі поля мають бути заповнені!");
                 return;
             }
@@ -95,6 +96,7 @@ public class ClientApp extends Application {
                     out = client.getOut();
                     in = client.getIn();
                 }
+                this.username = usernameInput;
                 out.println("<connect username=\"" + username + "\"/>");
                 String response = in.readLine();
                 if (response == null) {
@@ -119,6 +121,19 @@ public class ClientApp extends Application {
                     ICQClientController controller = loader.getController();
                     controller.initializeClient(ip, port, username, client, in, out);
 
+                    // Надсилання запиту на відключення при натисканні на хрестик основної сцени
+                    stage.setOnCloseRequest(event -> { // Змінено 'e' на 'event'
+                        if (client != null && !client.getSocket().isClosed()) {
+                            out.println("<disconnect username=\"" + username + "\"/>");
+                            try {
+                                client.close();
+                            } catch (IOException ex) {
+                                System.err.println("Помилка закриття з'єднання: " + ex.getMessage());
+                            }
+                        }
+                        System.exit(0);
+                    });
+
                     stage.show();
                     dialogStage.close();
                 }
@@ -134,11 +149,17 @@ public class ClientApp extends Application {
             }
         });
 
+        // Надсилання запиту на відключення при натисканні на хрестик вікна логіну
         dialogStage.setOnCloseRequest(e -> {
-            try {
-                if (client != null) client.close();
-            } catch (IOException ex) {
-                System.err.println("Помилка закриття з'єднання: " + ex.getMessage());
+            if (client != null && !client.getSocket().isClosed()) {
+                if (username != null && isUsernameValid) {
+                    out.println("<disconnect username=\"" + username + "\"/>");
+                }
+                try {
+                    client.close();
+                } catch (IOException ex) {
+                    System.err.println("Помилка закриття з'єднання: " + ex.getMessage());
+                }
             }
             System.exit(0);
         });
