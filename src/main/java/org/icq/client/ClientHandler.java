@@ -13,7 +13,7 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        String xmlMessage;
+        String xmlMessage;  
         try {
             while ((xmlMessage = in.readLine()) != null) {
                 Document doc = parseXML(xmlMessage);

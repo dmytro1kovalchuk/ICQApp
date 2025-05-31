@@ -11,10 +11,19 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
+import java.io.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 
 public class ClientApp extends Application {
+    private Label errorLabel;
+    private Stage dialogStage;
+    private VBox dialogVBox;
+    private TextField ipField, portField, usernameField;
+    private ICQClient client;
+    private PrintWriter out;
+    private BufferedReader in;
+    private boolean isUsernameValid = false;
 
     public static void main(String[] args) {
         launch(args);
@@ -22,15 +31,17 @@ public class ClientApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        Stage dialogStage = new Stage();
+        dialogStage = new Stage();
         dialogStage.setTitle("Підключення до сервера");
 
         Label ipLabel = new Label("IP-адреса сервера:");
-        TextField ipField = new TextField("localhost");
+        ipField = new TextField("localhost");
         Label portLabel = new Label("Порт:");
-        TextField portField = new TextField("12345");
+        portField = new TextField("12345");
         Label usernameLabel = new Label("Ім'я користувача:");
-        TextField usernameField = new TextField();
+        usernameField = new TextField();
+        errorLabel = new Label();
+        errorLabel.setStyle("-fx-text-fill: red;");
 
         Button connectButton = new Button("Підключитися");
         connectButton.setDefaultButton(true);
@@ -46,13 +57,14 @@ public class ClientApp extends Application {
         grid.add(portField, 1, 1);
         grid.add(usernameLabel, 0, 2);
         grid.add(usernameField, 1, 2);
-        grid.add(connectButton, 1, 3);
+        grid.add(errorLabel, 0, 3, 2, 1);
+        grid.add(connectButton, 1, 4);
 
-        VBox dialogVBox = new VBox(20);
+        dialogVBox = new VBox(20);
         dialogVBox.setAlignment(Pos.CENTER);
         dialogVBox.getChildren().add(grid);
 
-        Scene dialogScene = new Scene(dialogVBox, 400, 250);
+        Scene dialogScene = new Scene(dialogVBox, 400, 300);
         dialogStage.setScene(dialogScene);
 
         connectButton.setOnAction(e -> {
@@ -61,7 +73,7 @@ public class ClientApp extends Application {
             String username = usernameField.getText().trim();
 
             if (ip.isEmpty() || portText.isEmpty() || username.isEmpty()) {
-                showAlert("Помилка", "Усі поля мають бути заповнені!");
+                errorLabel.setText("Усі поля мають бути заповнені!");
                 return;
             }
 
@@ -69,42 +81,74 @@ public class ClientApp extends Application {
             try {
                 port = Integer.parseInt(portText);
                 if (port < 1 || port > 65535) {
-                    showAlert("Помилка", "Порт має бути числом від 1 до 65535!");
+                    errorLabel.setText("Порт має бути числом від 1 до 65535!");
                     return;
                 }
             } catch (NumberFormatException ex) {
-                showAlert("Помилка", "Порт має бути числом!");
+                errorLabel.setText("Порт має бути числом!");
                 return;
             }
 
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/ICQInterface.fxml"));
-                Scene scene = new Scene(loader.load());
-                stage.setTitle("ICQ Chat");
-                stage.setScene(scene);
+                if (client == null || client.getSocket().isClosed()) {
+                    client = new ICQClient(ip, port);
+                    out = client.getOut();
+                    in = client.getIn();
+                }
+                out.println("<connect username=\"" + username + "\"/>");
+                String response = in.readLine();
+                if (response == null) {
+                    errorLabel.setText("Сервер не відповідає!");
+                    client.close();
+                    client = null;
+                    return;
+                }
 
-                ICQClientController controller = loader.getController();
-                controller.initializeClient(ip, port, username);
+                Document doc = parseXML(response);
+                String rootTag = doc.getDocumentElement().getTagName();
+                if (rootTag.equals("error")) {
+                    errorLabel.setText(doc.getDocumentElement().getTextContent());
+                    isUsernameValid = false;
+                } else if (rootTag.equals("connect")) {
+                    isUsernameValid = true;
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/ICQInterface.fxml"));
+                    Scene scene = new Scene(loader.load());
+                    stage.setTitle("ICQ Chat");
+                    stage.setScene(scene);
 
-                stage.show();
-                dialogStage.close();
+                    ICQClientController controller = loader.getController();
+                    controller.initializeClient(ip, port, username, client, in, out);
+
+                    stage.show();
+                    dialogStage.close();
+                }
             } catch (Exception ex) {
-                showAlert("Помилка", "Не вдалося підключитися до сервера: " + ex.getMessage());
+                errorLabel.setText("Не вдалося підключитися до сервера: " + ex.getMessage());
+                isUsernameValid = false;
+                try {
+                    if (client != null) client.close();
+                    client = null;
+                } catch (IOException ioEx) {
+                    errorLabel.setText("Помилка закриття з'єднання: " + ioEx.getMessage());
+                }
             }
         });
 
-        dialogStage.setOnCloseRequest(e -> System.exit(0));
-
-
+        dialogStage.setOnCloseRequest(e -> {
+            try {
+                if (client != null) client.close();
+            } catch (IOException ex) {
+                System.err.println("Помилка закриття з'єднання: " + ex.getMessage());
+            }
+            System.exit(0);
+        });
         dialogStage.showAndWait();
     }
 
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    private Document parseXML(String xml) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        return builder.parse(new ByteArrayInputStream(xml.getBytes("UTF-8")));
     }
 }

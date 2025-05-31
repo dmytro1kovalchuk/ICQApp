@@ -32,12 +32,15 @@ public class ClientConnection implements Runnable {
                 String rootTag = doc.getDocumentElement().getTagName();
 
                 if (rootTag.equals("connect")) {
-                    username = doc.getDocumentElement().getAttribute("username");
-                    if (ICQServer.clients.containsKey(username)) {
+                    String newUsername = doc.getDocumentElement().getAttribute("username");
+                    // Перевіряємо, чи ім'я вже зайняте
+                    if (ICQServer.clients.containsKey(newUsername)) {
                         sendError("Ім'я вже зайняте.");
-                        socket.close();
-                        return;
+                        socket.close(); // Закриваємо з'єднання для нового клієнта
+                        return; // Завершуємо обробку цього з'єднання
                     }
+                    // Якщо ім'я вільне, зберігаємо його і продовжуємо
+                    this.username = newUsername;
                     ICQServer.clients.put(username, this);
                     sendMessage(createConnectResponse());
                     sendUserListToAll();

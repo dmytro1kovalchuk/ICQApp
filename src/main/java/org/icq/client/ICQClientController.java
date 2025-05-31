@@ -25,7 +25,6 @@ public class ICQClientController {
     private Map<String, List<String>> messageHistory;
     private Document lastUserListDoc;
 
-
     public ICQClientController() {
         messageHistory = new HashMap<>();
     }
@@ -56,15 +55,13 @@ public class ICQClientController {
         }
     }
 
-    public void initializeClient(String serverAddress, int port, String username) throws IOException {
+    public void initializeClient(String serverAddress, int port, String username, ICQClient client, BufferedReader in, PrintWriter out) throws IOException {
         this.username = username;
-        client = new ICQClient(serverAddress, port);
-        out = client.getOut();
-        in = client.getIn();
+        this.client = client;
+        this.out = out;
+        this.in = in;
         targetName.setText("");
         userName.setText(username);
-        out.println("<connect username=\"" + username + "\"/>");
-
 
         searchField.textProperty().addListener((obs, oldValue, newValue) -> {
             updateUserListWithFilter(newValue);
@@ -128,7 +125,7 @@ public class ICQClientController {
     }
 
     private void updateUserList(Document doc) {
-        lastUserListDoc = doc; // Зберігаємо документ для фільтрації
+        lastUserListDoc = doc;
         updateUserListWithFilter(searchField.getText());
     }
 
